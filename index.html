@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThermoSim: Simulador Visual de Dilatación Térmica</title>
+    <link rel="stylesheet" href="css/estilos.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <h1>ThermoSim</h1>
+    <p style="text-align: center; color: #666; margin-top: 0;">Simulador Visual de Dilatación Térmica</p>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="abrirPestana(event, 'inicio')"><span class="icon">&#127968;</span>Inicio</button>
+        <button class="tab-btn" onclick="abrirPestana(event, 'lineal')"><span class="icon">&#8614;</span>Lineal</button>
+        <button class="tab-btn" onclick="abrirPestana(event, 'superficial')"><span class="icon">&#128196;</span>Superficial</button>
+        <button class="tab-btn" onclick="abrirPestana(event, 'volumetrica')"><span class="icon">&#128230;</span>Volumétrica</button>
+    </div>
+
+    <div id="inicio" class="tab-content active">
+        <h2>¿Qué es la Dilatación Térmica?</h2>
+        <p>Es el aumento o disminución de dimensiones que experimentan los cuerpos cuando cambia su temperatura...</p>
+        </div>
+
+    <div id="lineal" class="tab-content">
+        <div class="simulation-grid">
+            <div class="calculator-panel">
+                <div class="form-group">
+                    <label for="mat-lineal">Material:</label>
+                    <select id="mat-lineal">
+                        <option value="0.000012">Acero (1.2 x 10^-5)</option>
+                        <option value="0.000024">Aluminio (2.4 x 10^-5)</option>
+                        <option value="0.000017">Cobre (1.7 x 10^-5)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="L0">Longitud Inicial (m):</label>
+                    <input type="number" id="L0" value="10">
+                </div>
+                <div class="form-group">
+                    <label for="Ti-lineal">Temperatura Inicial (°C):</label>
+                    <input type="number" id="Ti-lineal" value="20">
+                </div>
+                <div class="form-group">
+                    <label for="Tf-lineal">Temperatura Final (°C):</label>
+                    <input type="number" id="Tf-lineal" value="80">
+                    <input type="range" id="Tf-lineal-slider" min="-200" max="300" value="80" style="margin-top: 5px;">
+                </div>
+                <button class="calc-btn" onclick="calcularLineal()">Calcular y Guardar</button>
+                <div id="res-lineal" class="result" style="display:none;"></div>
+            </div>
+            <div class="visual-panel">
+                <h3>Visualización (ΔL)</h3>
+                <canvas id="canvas-lineal" width="350" height="150"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div id="superficial" class="tab-content">
+        <div class="simulation-grid">
+            <div class="calculator-panel">
+                <div class="form-group">
+                    <label for="mat-superficial">Material:</label>
+                    <select id="mat-superficial">
+                        <option value="0.000024">Acero (2.4 x 10^-5)</option>
+                        <option value="0.000048">Aluminio (4.8 x 10^-5)</option>
+                        <option value="0.000034">Cobre (3.4 x 10^-5)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="forma-superficial">Forma del Objeto:</label>
+                    <select id="forma-superficial" onchange="calcularSuperficial()">
+                        <option value="rectangulo">Rectángulo</option>
+                        <option value="circulo">Círculo</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="A0">Área Inicial (m²):</label>
+                    <input type="number" id="A0" value="5">
+                </div>
+                <div class="form-group">
+                    <label for="Ti-superficial">Temperatura Inicial (°C):</label>
+                    <input type="number" id="Ti-superficial" value="20">
+                </div>
+                <div class="form-group">
+                    <label for="Tf-superficial">Temperatura Final (°C):</label>
+                    <input type="number" id="Tf-superficial" value="80">
+                    <input type="range" id="Tf-superficial-slider" min="-200" max="300" value="80" style="margin-top: 5px;">
+                </div>
+                <button class="calc-btn" onclick="calcularSuperficial()">Calcular y Guardar</button>
+                <div id="res-superficial" class="result" style="display:none;"></div>
+            </div>
+            <div class="visual-panel">
+                <h3>Visualización (ΔA)</h3>
+                <canvas id="canvas-superficial" width="300" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div id="volumetrica" class="tab-content">
+        <div class="simulation-grid">
+            <div class="calculator-panel">
+                 <div class="form-group">
+                    <label for="mat-volumetrica">Material:</label>
+                    <select id="mat-volumetrica">
+                        <option value="0.000036">Acero (3.6 x 10^-5)</option>
+                        <option value="0.000072">Aluminio (7.2 x 10^-5)</option>
+                        <option value="0.000051">Cobre (5.1 x 10^-5)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="forma-volumetrica">Forma del Objeto:</label>
+                    <select id="forma-volumetrica" onchange="calcularVolumetrica()">
+                        <option value="cubo">Cubo</option>
+                        <option value="esfera">Esfera</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="V0">Volumen Inicial (m³):</label>
+                    <input type="number" id="V0" value="2">
+                </div>
+                <div class="form-group">
+                    <label for="Ti-vol">Temperatura Inicial (°C):</label>
+                    <input type="number" id="Ti-vol" value="20">
+                </div>
+                <div class="form-group">
+                    <label for="Tf-vol">Temperatura Final (°C):</label>
+                    <input type="number" id="Tf-vol" value="80">
+                    <input type="range" id="Tf-volumetrica-slider" min="-200" max="300" value="80" style="margin-top: 5px;">
+                </div>
+                <button class="calc-btn" onclick="calcularVolumetrica()">Calcular y Guardar</button>
+                <div id="res-volumetrica" class="result" style="display:none;"></div>
+            </div>
+            <div class="visual-panel">
+                <h3>Visualización (ΔV)</h3>
+                <canvas id="canvas-volumetrica" width="300" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top: 30px; border-top: 2px solid #ddd; padding-top: 20px;">
+        <h3>Historial de Cálculos (Máx. 5)</h3>
+        <div style="overflow-x: auto;">
+            <table id="tabla-historial" style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="background-color: #2980b9; color: white;">
+                        <th style="padding: 10px; border: 1px solid #ddd;">Tipo</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">Valor Inicial</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">Temp. Inicial</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">Temp. Final</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">Variación (Δ)</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpo-tabla">
+                    </tbody>
+            </table>
+        </div>
+        <div style="margin-top: 20px; background: #fafafa; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+            <h4 style="text-align: center; margin-top: 0; color: #2c3e50;">Plano Cartesiano: Valor Inicial vs. Valor Final</h4>
+            <canvas id="canvas-grafico" height="100"></canvas>
+        </div>
+        <button class="calc-btn" onclick="descargarPDF()" style="background-color: #27ae60; margin-top: 15px;">Descargar Reporte en PDF</button>
+    </div>
+
+</div>
+
+<script src="js/app.js"></script>
+
+</body>
+</html>
