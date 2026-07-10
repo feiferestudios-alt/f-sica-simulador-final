@@ -1,0 +1,179 @@
+/* ========================================================================= */
+/* --- ESTILOS GENERALES ---                                                 */
+/* ========================================================================= */
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background-color: #f0f3f5; 
+    color: #333; 
+    margin: 0; 
+    padding: 20px; 
+    display: flex; 
+    justify-content: center; 
+}
+
+.container { 
+    background: #fff; 
+    padding: 30px; 
+    border-radius: 12px; 
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1); 
+    width: 100%; 
+    max-width: 800px; 
+    display: grid; 
+    grid-template-columns: 1fr; 
+    gap: 20px; 
+}
+
+h1 { text-align: center; color: #2c3e50; margin-bottom: 5px; }
+h2, h3 { color: #2c3e50; margin-top: 10px; }
+p { line-height: 1.6; font-size: 15px; }
+
+/* ========================================================================= */
+/* --- NAVEGACIÓN (PESTAÑAS) ---                                             */
+/* ========================================================================= */
+.tabs { 
+    display: flex; 
+    border-bottom: 2px solid #ddd; 
+    margin-bottom: 10px; 
+    gap: 5px;
+}
+
+.tab-btn { 
+    flex: 1; 
+    padding: 12px; 
+    cursor: pointer; 
+    background: #f8f9fa; 
+    border: 1px solid #ddd; 
+    border-bottom: none; 
+    border-radius: 8px 8px 0 0; 
+    font-size: 15px; 
+    font-weight: bold; 
+    color: #7f8c8d; 
+    transition: 0.3s; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 8px; 
+}
+
+.tab-btn .icon { font-size: 1.2em; }
+.tab-btn.active { background-color: #fff; color: #2980b9; border-bottom: 3px solid #2980b9; margin-bottom: -2px; }
+.tab-btn:hover:not(.active) { background-color: #e9ecef; color: #2980b9; }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ========================================================================= */
+/* --- PANELES DE SIMULACIÓN Y FORMULARIOS ---                               */
+/* ========================================================================= */
+.simulation-grid { 
+    display: grid; 
+    grid-template-columns: 1fr; 
+    gap: 20px; 
+}
+
+/* Diseño responsivo: En pantallas grandes, divide en 2 columnas */
+@media(min-width: 700px) { 
+    .simulation-grid { grid-template-columns: 1fr 1fr; } 
+}
+
+.calculator-panel { padding: 10px; }
+.visual-panel { 
+    border: 1px solid #ddd; 
+    border-radius: 8px; 
+    background: #fafafa; 
+    padding: 10px; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center;
+}
+
+canvas { border: 1px solid #eee; background: #fff; border-radius: 4px; max-width: 100%; }
+
+.form-group { margin-bottom: 15px; }
+label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+input[type="number"], select { 
+    width: 100%; 
+    padding: 10px; 
+    border: 1px solid #ccc; 
+    border-radius: 6px; 
+    box-sizing: border-box; 
+}
+
+/* Estilo para el nuevo control deslizante (Slider) */
+input[type="range"] {
+    width: 100%;
+    margin-top: 8px;
+    cursor: pointer;
+}
+
+/* ========================================================================= */
+/* --- BOTONES Y RESULTADOS ---                                              */
+/* ========================================================================= */
+button.calc-btn { 
+    background-color: #2980b9; 
+    color: white; 
+    border: none; 
+    cursor: pointer; 
+    font-size: 16px; 
+    margin-top: 10px; 
+    font-weight: bold;
+    width: 100%; 
+    padding: 10px; 
+    border-radius: 6px; 
+    transition: background-color 0.3s;
+}
+
+button.calc-btn:hover { background-color: #3498db; }
+
+/* Botón específico para descargar el PDF (color verde) */
+button.btn-pdf {
+    background-color: #27ae60;
+    margin-top: 15px;
+}
+button.btn-pdf:hover { background-color: #2ecc71; }
+
+.result { 
+    margin-top: 15px; 
+    padding: 15px; 
+    background-color: #e8f4f8; 
+    border-left: 5px solid #2980b9; 
+    border-radius: 4px; 
+    font-size: 15px; 
+    width: 100%; 
+    box-sizing: border-box;
+}
+
+.destacado { color: #2980b9; font-weight: bold; }
+
+/* ========================================================================= */
+/* --- TABLA DE HISTORIAL ---                                                */
+/* ========================================================================= */
+.tabla-contenedor {
+    overflow-x: auto; /* Permite hacer scroll horizontal si la pantalla es muy pequeña */
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    margin-top: 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse; /* Quita los espacios dobles entre bordes */
+    background-color: #fff;
+    text-align: left;
+}
+
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+th {
+    background-color: #2980b9;
+    color: white;
+    font-weight: bold;
+}
+
+/* Efecto cebra para las filas de la tabla */
+tr:nth-child(even) { background-color: #f9f9f9; }
+tr:hover { background-color: #f1f5f8; } /* Resalta la fila al pasar el mouse */
