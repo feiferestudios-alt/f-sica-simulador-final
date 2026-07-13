@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ThermoSim: Simulador Visual de Dilatación Térmica</title>
     <link rel="stylesheet" href="css/estilos.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -21,22 +20,37 @@
         <button class="tab-btn" onclick="abrirPestana(event, 'lineal')"><span class="icon">&#8614;</span>Lineal</button>
         <button class="tab-btn" onclick="abrirPestana(event, 'superficial')"><span class="icon">&#128196;</span>Superficial</button>
         <button class="tab-btn" onclick="abrirPestana(event, 'volumetrica')"><span class="icon">&#128230;</span>Volumétrica</button>
+        <button class="tab-btn" onclick="abrirPestana(event, 'comparacion')"><span class="icon">&#9876;</span>Comparar</button>
     </div>
 
     <div id="inicio" class="tab-content active">
         <h2>¿Qué es la Dilatación Térmica?</h2>
-        <p>Es el aumento o disminución de dimensiones que experimentan los cuerpos cuando cambia su temperatura...</p>
-        </div>
+        <p>Es el aumento o disminución de dimensiones que experimentan los cuerpos cuando cambia su temperatura. A nivel microscópico, el calor aumenta la energía cinética de las moléculas, haciendo que se agiten con mayor velocidad e incrementando la distancia promedio entre ellas.</p>
+        
+        <h3>¿Cuál es la diferencia entre ellas?</h3>
+        <ul>
+            <li><span class="destacado">Dilatación Lineal (1 Dimensión):</span> Se analiza en objetos donde el largo es mucho mayor que su grosor.</li>
+            <li><span class="destacado">Dilatación Superficial (2 Dimensiones):</span> Aplica a objetos planos donde el largo y el ancho son importantes, pero el grosor es mínimo.</li>
+            <li><span class="destacado">Dilatación Volumétrica (3 Dimensiones):</span> Se utiliza para objetos tridimensionales donde el largo, ancho y profundidad son proporcionales.</li>
+        </ul>
+
+        <h3>¿Para qué sirve calcular esto en el mundo real?</h3>
+        <p>Es indispensable en la ingeniería civil, de software y arquitectura. Si no se calculan estos cambios y no se dejan márgenes de tolerancia, la expansión o contracción producida por la temperatura puede causar daños severos en estructuras o circuitos.</p>
+    </div>
 
     <div id="lineal" class="tab-content">
         <div class="simulation-grid">
             <div class="calculator-panel">
                 <div class="form-group">
-                    <label for="mat-lineal">Material:</label>
+                    <label for="mat-lineal">Material (Coeficiente α):</label>
                     <select id="mat-lineal">
                         <option value="0.000012">Acero (1.2 x 10^-5)</option>
                         <option value="0.000024">Aluminio (2.4 x 10^-5)</option>
                         <option value="0.000017">Cobre (1.7 x 10^-5)</option>
+                        <option value="0.000019">Plata (1.9 x 10^-5)</option>
+                        <option value="0.000014">Oro (1.4 x 10^-5)</option>
+                        <option value="0.000009">Vidrio (0.9 x 10^-5)</option>
+                        <option value="0.000018">Latón (1.8 x 10^-5)</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -66,11 +80,15 @@
         <div class="simulation-grid">
             <div class="calculator-panel">
                 <div class="form-group">
-                    <label for="mat-superficial">Material:</label>
+                    <label for="mat-superficial">Material (Coeficiente β = 2α):</label>
                     <select id="mat-superficial">
                         <option value="0.000024">Acero (2.4 x 10^-5)</option>
                         <option value="0.000048">Aluminio (4.8 x 10^-5)</option>
                         <option value="0.000034">Cobre (3.4 x 10^-5)</option>
+                        <option value="0.000038">Plata (3.8 x 10^-5)</option>
+                        <option value="0.000028">Oro (2.8 x 10^-5)</option>
+                        <option value="0.000018">Vidrio (1.8 x 10^-5)</option>
+                        <option value="0.000036">Latón (3.6 x 10^-5)</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -107,11 +125,15 @@
         <div class="simulation-grid">
             <div class="calculator-panel">
                  <div class="form-group">
-                    <label for="mat-volumetrica">Material:</label>
+                    <label for="mat-volumetrica">Material (Coeficiente γ = 3α):</label>
                     <select id="mat-volumetrica">
                         <option value="0.000036">Acero (3.6 x 10^-5)</option>
                         <option value="0.000072">Aluminio (7.2 x 10^-5)</option>
                         <option value="0.000051">Cobre (5.1 x 10^-5)</option>
+                        <option value="0.000057">Plata (5.7 x 10^-5)</option>
+                        <option value="0.000042">Oro (4.2 x 10^-5)</option>
+                        <option value="0.000027">Vidrio (2.7 x 10^-5)</option>
+                        <option value="0.000054">Latón (5.4 x 10^-5)</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -144,28 +166,89 @@
         </div>
     </div>
 
-    <div style="margin-top: 30px; border-top: 2px solid #ddd; padding-top: 20px;">
+    <div id="comparacion" class="tab-content">
+        <div class="simulation-grid">
+            <div class="calculator-panel">
+                <h3 style="text-align:center; margin-top:0; color: #2c3e50;">Carrera de Materiales</h3>
+                <p style="font-size: 13px; text-align: center; color: #666;">Compara la dilatación lineal de dos materiales. ¡Cuidado con chocar!</p>
+                
+                <div style="border: 2px solid #2980b9; border-radius: 8px; padding: 10px; margin-bottom: 15px;">
+                    <h4 style="margin: 0 0 10px 0; color: #2980b9;">Objeto A</h4>
+                    <div class="form-group">
+                        <select id="mat-comp-A">
+                            <option value="0.000012">Acero (1.2 x 10^-5)</option>
+                            <option value="0.000024">Aluminio (2.4 x 10^-5)</option>
+                            <option value="0.000017">Cobre (1.7 x 10^-5)</option>
+                            <option value="0.000019">Plata (1.9 x 10^-5)</option>
+                            <option value="0.000014">Oro (1.4 x 10^-5)</option>
+                            <option value="0.000009">Vidrio (0.9 x 10^-5)</option>
+                            <option value="0.000018">Latón (1.8 x 10^-5)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Temperatura (°C): <span id="val-temp-A">80</span></label>
+                        <input type="range" id="slider-comp-A" min="-200" max="300" value="80">
+                    </div>
+                </div>
+
+                <div style="border: 2px solid #e67e22; border-radius: 8px; padding: 10px; margin-bottom: 15px;">
+                    <h4 style="margin: 0 0 10px 0; color: #e67e22;">Objeto B</h4>
+                    <div class="form-group">
+                        <select id="mat-comp-B">
+                            <option value="0.000024" selected>Aluminio (2.4 x 10^-5)</option>
+                            <option value="0.000012">Acero (1.2 x 10^-5)</option>
+                            <option value="0.000017">Cobre (1.7 x 10^-5)</option>
+                            <option value="0.000019">Plata (1.9 x 10^-5)</option>
+                            <option value="0.000014">Oro (1.4 x 10^-5)</option>
+                            <option value="0.000009">Vidrio (0.9 x 10^-5)</option>
+                            <option value="0.000018">Latón (1.8 x 10^-5)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Temperatura (°C): <span id="val-temp-B">80</span></label>
+                        <input type="range" id="slider-comp-B" min="-200" max="300" value="80">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Longitud Inicial Base (m):</label>
+                    <input type="number" id="L0-comp" value="10">
+                </div>
+            </div>
+            
+            <div class="visual-panel">
+                <h3>Visualización en Vivo</h3>
+                <canvas id="canvas-comparacion" width="350" height="200"></canvas>
+                <div id="res-comparacion" class="result" style="display:none; font-size: 14px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="zona-historial" style="display: none; margin-top: 30px; border-top: 2px solid #ddd; padding-top: 20px;">
         <h3>Historial de Cálculos (Máx. 5)</h3>
-        <div style="overflow-x: auto;">
-            <table id="tabla-historial" style="width: 100%; border-collapse: collapse; text-align: left;">
+        
+        <div class="tabla-contenedor">
+            <table id="tabla-historial">
                 <thead>
-                    <tr style="background-color: #2980b9; color: white;">
-                        <th style="padding: 10px; border: 1px solid #ddd;">Tipo</th>
-                        <th style="padding: 10px; border: 1px solid #ddd;">Valor Inicial</th>
-                        <th style="padding: 10px; border: 1px solid #ddd;">Temp. Inicial</th>
-                        <th style="padding: 10px; border: 1px solid #ddd;">Temp. Final</th>
-                        <th style="padding: 10px; border: 1px solid #ddd;">Variación (Δ)</th>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>V. Inicial</th>
+                        <th>T. Inicial</th>
+                        <th>T. Final</th>
+                        <th>Variación (Δ)</th>
                     </tr>
                 </thead>
                 <tbody id="cuerpo-tabla">
                     </tbody>
             </table>
         </div>
+
         <div style="margin-top: 20px; background: #fafafa; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
-            <h4 style="text-align: center; margin-top: 0; color: #2c3e50;">Plano Cartesiano: Valor Inicial vs. Valor Final</h4>
+            <h4 style="text-align: center; margin-top: 0; color: #2c3e50;">Variación Térmica (Expansión vs Contracción)</h4>
             <canvas id="canvas-grafico" height="100"></canvas>
         </div>
-        <button class="calc-btn" onclick="descargarPDF()" style="background-color: #27ae60; margin-top: 15px;">Descargar Reporte en PDF</button>
+
+        <button class="calc-btn btn-pdf" onclick="descargarPDF()">Descargar Reporte en PDF</button>
     </div>
 
 </div>
