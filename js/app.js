@@ -2,17 +2,16 @@
 // --- VARIABLES GLOBALES ---
 // =========================================================================
 
-// Arreglo para guardar nuestro historial. Actuará como una estructura de datos FIFO (First-In, First-Out)
 let registrosHistorial = []; 
 const COLOR_FRIO = "#b0bec5"; 
 const COLOR_CALIENTE = "#ef5350"; 
-const COLOR_CONTRACCION = "#4fc3f7"; // Color azul para representar cuando el material se enfría y encoge
-let graficoCartesiano = null;
+const COLOR_CONTRACCION = "#4fc3f7"; 
+let graficoCartesiano = null; 
+
 // =========================================================================
 // --- NAVEGACIÓN Y EVENTOS ---
 // =========================================================================
 
-// Función para cambiar las pestañas
 function abrirPestana(evento, nombrePestana) {
     let contenidos = document.getElementsByClassName("tab-content");
     for (let i = 0; i < contenidos.length; i++) { 
@@ -26,35 +25,37 @@ function abrirPestana(evento, nombrePestana) {
 
     document.getElementById(nombrePestana).style.display = "block";
     evento.currentTarget.classList.add("active");
+
+    let zonaHistorial = document.getElementById("zona-historial");
+    if (nombrePestana === "inicio" || nombrePestana === "comparacion") {
+        zonaHistorial.style.display = "none";
+    } else {
+        zonaHistorial.style.display = "block";
+    }
 }
 
-// Sincronizar los Sliders (controles deslizantes) con los Inputs de texto
 document.getElementById('Tf-lineal-slider').addEventListener('input', function() {
     document.getElementById('Tf-lineal').value = this.value;
-    calcularLineal(false); // Pasamos 'false' para que NO guarde en el historial mientras arrastramos
+    calcularLineal(false); 
 });
-
 document.getElementById('Tf-superficial-slider').addEventListener('input', function() {
     document.getElementById('Tf-superficial').value = this.value;
     calcularSuperficial(false);
 });
-
 document.getElementById('Tf-volumetrica-slider').addEventListener('input', function() {
     document.getElementById('Tf-vol').value = this.value;
     calcularVolumetrica(false);
 });
 
 // =========================================================================
-// --- VALIDACIONES FÍSICAS BÁSICAS ---
+// --- VALIDACIONES FÍSICAS ---
 // =========================================================================
 
 function validarDatos(valorFisico, tempInicial, tempFinal) {
-    // El valor físico (longitud, área, volumen) no puede ser cero o negativo
     if (valorFisico <= 0) {
         alert("Error: El valor inicial debe ser mayor a cero.");
         return false;
     }
-    // Límite físico: Cero absoluto
     if (tempInicial < -273.15 || tempFinal < -273.15) {
         alert("Error: La temperatura no puede ser menor al cero absoluto (-273.15 °C).");
         return false;
@@ -63,7 +64,7 @@ function validarDatos(valorFisico, tempInicial, tempFinal) {
 }
 
 // =========================================================================
-// --- FUNCIONES DE CÁLCULO ---
+// --- FUNCIONES DE CÁLCULO PRINCIPALES ---
 // =========================================================================
 
 function calcularLineal(guardar = true) {
@@ -72,27 +73,21 @@ function calcularLineal(guardar = true) {
     let temperaturaInicial = parseFloat(document.getElementById('Ti-lineal').value);
     let temperaturaFinal = parseFloat(document.getElementById('Tf-lineal').value);
 
-    // Validar antes de calcular
-    if (validarDatos(longitudInicial, temperaturaInicial, temperaturaFinal) == false) {
-        return; 
-    }
+    if (validarDatos(longitudInicial, temperaturaInicial, temperaturaFinal) == false) return;
 
     let cambioTemperatura = temperaturaFinal - temperaturaInicial;
     let variacionLongitud = longitudInicial * alfa * cambioTemperatura;
     let longitudFinal = longitudInicial + variacionLongitud;
 
-    // Mostrar resultado numérico
     let cajaResultado = document.getElementById('res-lineal');
     cajaResultado.style.display = "block";
     cajaResultado.innerHTML = "<b>Variación Real (ΔL):</b> " + variacionLongitud.toFixed(6) + " m <br>" +
                               "<b>Longitud Final:</b> " + longitudFinal.toFixed(6) + " m";
 
-    // Llamar a Canvas
     dibujarVisualLineal(variacionLongitud);
 
-    // Guardar en historial si el botón fue presionado
     if (guardar == true) {
-        agregarAlHistorial("Lineal", longitudInicial + " m", temperaturaInicial, temperaturaFinal, variacionLongitud.toFixed(6) + " m");
+        agregarAlHistorial("Lineal", longitudInicial + " m", temperaturaInicial, temperaturaFinal, variacionLongitud.toFixed(6));
     }
 }
 
@@ -117,7 +112,7 @@ function calcularSuperficial(guardar = true) {
     dibujarVisualSuperficial(variacionArea, formaElegida);
 
     if (guardar == true) {
-        agregarAlHistorial("Superficial", areaInicial + " m²", temperaturaInicial, temperaturaFinal, variacionArea.toFixed(6) + " m²");
+        agregarAlHistorial("Superficial", areaInicial + " m²", temperaturaInicial, temperaturaFinal, variacionArea.toFixed(6));
     }
 }
 
@@ -140,12 +135,12 @@ function calcularVolumetrica(guardar = true) {
     dibujarVisualVolumetrica(variacionVolumen, formaElegida); 
 
     if (guardar == true) {
-        agregarAlHistorial("Volumétrica", volumenInicial + " m³", temperaturaInicial, temperaturaFinal, variacionVolumen.toFixed(6) + " m³");
+        agregarAlHistorial("Volumétrica", volumenInicial + " m³", temperaturaInicial, temperaturaFinal, variacionVolumen.toFixed(6));
     }
 }
 
 // =========================================================================
-// --- FUNCIONES DE CANVAS ---
+// --- FUNCIONES DE CANVAS (CON LIMITADOR DE DESBORDAMIENTO) ---
 // =========================================================================
 
 function dibujarVisualLineal(variacionLongitud) {
@@ -160,11 +155,15 @@ function dibujarVisualLineal(variacionLongitud) {
     const factorEscala = 5000; 
     let variacionPixeles = variacionLongitud * factorEscala;
     
-    // Dibujar estado inicial (Frío)
+    // LIMITADOR DE DESBORDAMIENTO
+    let limiteMaximo = canvas.width - (x + longitudInicialPixeles) - 10;
+    if (variacionPixeles > limiteMaximo) {
+        variacionPixeles = limiteMaximo;
+    }
+
     ctx.fillStyle = COLOR_FRIO;
     ctx.fillRect(x, y, longitudInicialPixeles, anchoBarra);
 
-    // Condicional para expansión o contracción
     if (variacionLongitud > 0) {
         ctx.fillStyle = COLOR_CALIENTE;
         ctx.fillRect(x + longitudInicialPixeles, y, variacionPixeles, anchoBarra);
@@ -185,6 +184,13 @@ function dibujarVisualSuperficial(variacionArea, forma) {
     const factorEscala = 2000; 
     
     let expansionVisual = Math.sqrt(Math.abs(variacionArea) * factorEscala); 
+    
+    // LIMITADOR DE DESBORDAMIENTO
+    let limiteMaximo = (canvas.height / 2) - (tamanoInicial / 2) - 10;
+    if (expansionVisual > limiteMaximo) {
+        expansionVisual = limiteMaximo;
+    }
+
     let colorFondo = variacionArea > 0 ? COLOR_CALIENTE : COLOR_FRIO;
     let colorFrente = variacionArea > 0 ? COLOR_FRIO : COLOR_CONTRACCION;
 
@@ -220,11 +226,16 @@ function dibujarVisualVolumetrica(variacionVolumen, forma) {
     const factorEscala = 1000; 
 
     let expansionVisual = Math.pow(Math.abs(variacionVolumen) * factorEscala, 1/3); 
+    
+    // LIMITADOR DE DESBORDAMIENTO
+    let limiteMaximo = (canvas.height / 2) - (tamanoInicial / 2) - 10;
+    if (expansionVisual > limiteMaximo) {
+        expansionVisual = limiteMaximo;
+    }
+
     let colorFondo = variacionVolumen > 0 ? COLOR_CALIENTE : COLOR_FRIO;
     let colorFrente = variacionVolumen > 0 ? COLOR_FRIO : COLOR_CONTRACCION;
 
-    // --- TRUCO 3D: SOMBRAS ---
-    // Añadimos una sombra para simular volumen y profundidad en el espacio
     ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
     ctx.shadowBlur = 15;
     ctx.shadowOffsetX = 10;
@@ -235,16 +246,13 @@ function dibujarVisualVolumetrica(variacionVolumen, forma) {
         let xRect = xCentro - (ladoBaseFinal/2);
         let yRect = yCentro - (ladoBaseFinal/2);
 
-        // --- TRUCO 3D: LUZ EN EL CUBO ---
-        // createLinearGradient crea un degradado de esquina a esquina para simular una superficie sólida
         let gradienteFondo = ctx.createLinearGradient(xRect, yRect, xRect + ladoBaseFinal, yRect + ladoBaseFinal);
-        gradienteFondo.addColorStop(0, '#ffffff'); // Brillo en la esquina superior izquierda
-        gradienteFondo.addColorStop(1, colorFondo); // Color principal en la parte inferior derecha
+        gradienteFondo.addColorStop(0, '#ffffff'); 
+        gradienteFondo.addColorStop(1, colorFondo); 
 
         ctx.fillStyle = gradienteFondo;
         ctx.fillRect(xRect, yRect, ladoBaseFinal, ladoBaseFinal);
         
-        // Apagamos la sombra para dibujar el recuadro interno y que no se vea doble sombra
         ctx.shadowColor = 'transparent';
 
         let xRectInterno = xCentro - (tamanoInicial/2);
@@ -258,20 +266,17 @@ function dibujarVisualVolumetrica(variacionVolumen, forma) {
         ctx.fillRect(xRectInterno, yRectInterno, tamanoInicial, tamanoInicial);
 
     } else {
-        // --- TRUCO 3D: LUZ EN LA ESFERA ---
         let radioFinal = (tamanoInicial / 2) + expansionVisual;
 
-        // createRadialGradient crea un brillo circular. Desplazamos el centro para que parezca luz impactando una bola.
         let gradienteFondo = ctx.createRadialGradient(xCentro - radioFinal/3, yCentro - radioFinal/3, radioFinal/10, xCentro, yCentro, radioFinal);
-        gradienteFondo.addColorStop(0, '#ffffff'); // Punto de luz (brillo)
-        gradienteFondo.addColorStop(1, colorFondo); // Color principal
+        gradienteFondo.addColorStop(0, '#ffffff'); 
+        gradienteFondo.addColorStop(1, colorFondo); 
 
         ctx.beginPath();
         ctx.arc(xCentro, yCentro, radioFinal, 0, 2 * Math.PI);
         ctx.fillStyle = gradienteFondo;
         ctx.fill();
 
-        // Apagamos la sombra para el círculo interno
         ctx.shadowColor = 'transparent';
 
         let radioInicial = tamanoInicial / 2;
@@ -285,12 +290,128 @@ function dibujarVisualVolumetrica(variacionVolumen, forma) {
         ctx.fill();
     }
     
-    // Asegurarnos de limpiar la configuración de sombras al terminar la función
     ctx.shadowColor = 'transparent';
 }
 
 // =========================================================================
-// --- FUNCIONES DEL HISTORIAL Y PDF ---
+// --- FUNCIONES DE COMPARACIÓN (CARRERA A/B Y COLISIÓN) ---
+// =========================================================================
+
+document.getElementById('slider-comp-A').addEventListener('input', function() {
+    document.getElementById('val-temp-A').innerText = this.value;
+    calcularComparacion();
+});
+
+document.getElementById('slider-comp-B').addEventListener('input', function() {
+    document.getElementById('val-temp-B').innerText = this.value;
+    calcularComparacion();
+});
+
+document.getElementById('mat-comp-A').addEventListener('change', calcularComparacion);
+document.getElementById('mat-comp-B').addEventListener('change', calcularComparacion);
+document.getElementById('L0-comp').addEventListener('input', calcularComparacion);
+
+function calcularComparacion() {
+    let alfaA = parseFloat(document.getElementById('mat-comp-A').value);
+    let alfaB = parseFloat(document.getElementById('mat-comp-B').value);
+    let longitudInicial = parseFloat(document.getElementById('L0-comp').value);
+    let tempFinalA = parseFloat(document.getElementById('slider-comp-A').value);
+    let tempFinalB = parseFloat(document.getElementById('slider-comp-B').value);
+    let tempInicial = 20; 
+
+    if (longitudInicial <= 0 || isNaN(longitudInicial)) return;
+
+    let variacionA = longitudInicial * alfaA * (tempFinalA - tempInicial);
+    let variacionB = longitudInicial * alfaB * (tempFinalB - tempInicial);
+
+    let cajaResultado = document.getElementById('res-comparacion');
+    cajaResultado.style.display = "block";
+    cajaResultado.innerHTML = 
+        "<span style='color:#2980b9; font-weight:bold;'>ΔL Objeto A:</span> " + variacionA.toFixed(6) + " m <br><br>" +
+        "<span style='color:#e67e22; font-weight:bold;'>ΔL Objeto B:</span> " + variacionB.toFixed(6) + " m";
+
+    dibujarVisualComparacion(variacionA, variacionB);
+}
+
+function dibujarVisualComparacion(variacionA, variacionB) {
+    const canvas = document.getElementById('canvas-comparacion');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const anchoBarra = 30; 
+    const y = 85; 
+    const longitudInicialPixeles = 80; 
+    const factorEscala = 6000; 
+
+    // Posiciones frente a frente
+    const xInicioA = 10;
+    const bordeDerechoInicialA = xInicioA + longitudInicialPixeles;
+
+    const xInicioB = canvas.width - 10 - longitudInicialPixeles; 
+    const bordeIzquierdoInicialB = xInicioB; 
+
+    let expPixelesA = variacionA * factorEscala;
+    let expPixelesB = variacionB * factorEscala;
+
+    let bordeFinalA = bordeDerechoInicialA + expPixelesA;
+    let bordeFinalB = bordeIzquierdoInicialB - expPixelesB; 
+
+    // SISTEMA DE DETECCIÓN DE COLISIÓN
+    let chocaron = false;
+    
+    if (bordeFinalA >= bordeFinalB) {
+        chocaron = true;
+        let puntoDeChoque = (bordeFinalA + bordeFinalB) / 2;
+        
+        // Frenar la expansión en el punto medio exacto
+        expPixelesA = puntoDeChoque - bordeDerechoInicialA;
+        expPixelesB = bordeIzquierdoInicialB - puntoDeChoque;
+    }
+
+    // Dibujar A
+    ctx.fillStyle = COLOR_FRIO; 
+    ctx.fillRect(xInicioA, y, longitudInicialPixeles, anchoBarra);
+    
+    if (variacionA > 0) {
+        ctx.fillStyle = "#2980b9"; 
+        ctx.fillRect(bordeDerechoInicialA, y, expPixelesA, anchoBarra);
+    } else {
+        ctx.fillStyle = COLOR_CONTRACCION; 
+        ctx.fillRect(bordeDerechoInicialA + expPixelesA, y, Math.abs(expPixelesA), anchoBarra);
+    }
+
+    // Dibujar B
+    ctx.fillStyle = COLOR_FRIO; 
+    ctx.fillRect(xInicioB, y, longitudInicialPixeles, anchoBarra);
+    
+    if (variacionB > 0) {
+        ctx.fillStyle = "#e67e22"; 
+        ctx.fillRect(bordeIzquierdoInicialB - expPixelesB, y, expPixelesB, anchoBarra);
+    } else {
+        ctx.fillStyle = COLOR_CONTRACCION; 
+        ctx.fillRect(bordeIzquierdoInicialB, y, Math.abs(expPixelesB), anchoBarra);
+    }
+
+    // Textos visuales
+    ctx.fillStyle = "#333";
+    ctx.font = "16px bold sans-serif";
+    ctx.fillText("Objeto A", xInicioA + 10, y - 15);
+    ctx.fillText("Objeto B", xInicioB + 10, y - 15);
+
+    if (chocaron) {
+        ctx.fillStyle = "red";
+        ctx.font = "18px bold sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("¡COLISIÓN TÉRMICA!", canvas.width / 2, y + anchoBarra + 30);
+        ctx.textAlign = "left"; 
+    }
+}
+
+// Llamada para inicializar la carrera al cargar la web
+setTimeout(calcularComparacion, 500); 
+
+// =========================================================================
+// --- FUNCIONES DEL HISTORIAL Y TABLA HTML ---
 // =========================================================================
 
 function agregarAlHistorial(tipo, valorInicial, tempInicial, tempFinal, variacion) {
@@ -321,7 +442,6 @@ function actualizarTablaHTML() {
     for (let i = 0; i < registrosHistorial.length; i++) {
         let registro = registrosHistorial[i];
         
-        // Construir la fila HTML (ya no necesitamos los 'style' porque están en el CSS)
         let fila = "<tr>" +
             "<td>" + registro.tipo + "</td>" +
             "<td>" + registro.valorInicial + "</td>" +
@@ -333,6 +453,63 @@ function actualizarTablaHTML() {
         cuerpoTabla.innerHTML += fila;
     }
 }
+
+// =========================================================================
+// --- FUNCIONES DEL GRÁFICO (CHART.JS) ---
+// =========================================================================
+
+function actualizarGraficoCartesiano() {
+    const ctx = document.getElementById('canvas-grafico').getContext('2d');
+
+    if (graficoCartesiano != null) {
+        graficoCartesiano.destroy();
+    }
+
+    let etiquetasX = [];
+    let datosVariacionY = [];
+    let coloresBarras = [];
+
+    for (let i = 0; i < registrosHistorial.length; i++) {
+        let registro = registrosHistorial[i];
+        etiquetasX.push("Calc " + (i + 1) + " (" + registro.tipo + ")");
+
+        let variacionNumerica = parseFloat(registro.variacion);
+        datosVariacionY.push(variacionNumerica);
+
+        if (variacionNumerica > 0) {
+            coloresBarras.push('#ef5350'); 
+        } else {
+            coloresBarras.push('#4fc3f7'); 
+        }
+    }
+
+    graficoCartesiano = new Chart(ctx, {
+        type: 'bar', 
+        data: {
+            labels: etiquetasX,
+            datasets: [{
+                label: 'Variación Térmica (Δ)',
+                data: datosVariacionY,
+                backgroundColor: coloresBarras,
+                borderColor: '#333',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    title: { display: true, text: 'Aumento (+) / Reducción (-)' },
+                    beginAtZero: true 
+                }
+            }
+        }
+    });
+}
+
+// =========================================================================
+// --- FUNCIÓN PARA DESCARGAR PDF ---
+// =========================================================================
 
 function descargarPDF() {
     if (registrosHistorial.length === 0) {
@@ -359,7 +536,6 @@ function descargarPDF() {
     doc.setFont("", "normal");
     posY += 10;
 
-    // Recorrer el arreglo para escribir los datos de la tabla
     for (let i = 0; i < registrosHistorial.length; i++) {
         let r = registrosHistorial[i];
         doc.text(r.tipo, 20, posY);
@@ -370,88 +546,16 @@ function descargarPDF() {
         posY += 10; 
     }
 
-    // --- NUEVA LÓGICA: INCRUSTAR LA GRÁFICA EN EL PDF ---
-    
-    // Verificamos si el gráfico existe antes de intentar agregarlo
     if (graficoCartesiano != null) {
-        // Le damos un poco de espacio hacia abajo después de que termine la tabla
         posY += 15; 
         doc.setFont("", "bold");
         doc.text("Gráfica de Variaciones:", 20, posY);
         
-        // 1. Obtenemos el elemento canvas de la gráfica
         let canvasGrafico = document.getElementById('canvas-grafico');
-        
-        // 2. Tomamos una "foto" del canvas y la convertimos a formato imagen PNG (Base64)
         let imagenBase64 = canvasGrafico.toDataURL('image/png');
-        
-        // 3. Agregamos la imagen al documento PDF
-        // Parámetros: (imagen, formato, posiciónX, posiciónY, ancho, alto)
-        // Usamos un ancho de 160 y alto de 80 para que se vea proporcionada en la hoja A4
         doc.addImage(imagenBase64, 'PNG', 20, posY + 10, 160, 80);
     }
 
     doc.save("Reporte_ThermoSim.pdf");
     alert("Generando y descargando PDF...");
-}
-
-// =========================================================================
-// --- FUNCIONES DEL GRÁFICO (CHART.JS) CORREGIDO PARA NEGATIVOS ---
-// =========================================================================
-
-function actualizarGraficoCartesiano() {
-    const ctx = document.getElementById('canvas-grafico').getContext('2d');
-
-    // 1. Destruir el gráfico anterior para evitar sobreescritura
-    if (graficoCartesiano != null) {
-        graficoCartesiano.destroy();
-    }
-
-    let etiquetasX = [];
-    let datosVariacionY = [];
-    let coloresBarras = [];
-
-    // 2. Extraer solo las variaciones (Δ) del historial
-    for (let i = 0; i < registrosHistorial.length; i++) {
-        let registro = registrosHistorial[i];
-        
-        // Eje X: El número de cálculo
-        etiquetasX.push("Calc " + (i + 1) + " (" + registro.tipo + ")");
-
-        // Eje Y: El valor del incremento o decremento numérico
-        let variacionNumerica = parseFloat(registro.variacion);
-        datosVariacionY.push(variacionNumerica);
-
-        // 3. Lógica de colores para evidenciar expansión o contracción
-        if (variacionNumerica > 0) {
-            coloresBarras.push('#ef5350'); // Rojo si el material se expande (Calor)
-        } else {
-            coloresBarras.push('#4fc3f7'); // Azul si el material se contrae (Frío/Negativo)
-        }
-    }
-
-    // 4. Construir el gráfico en formato de Barras ('bar')
-    graficoCartesiano = new Chart(ctx, {
-        type: 'bar', 
-        data: {
-            labels: etiquetasX,
-            datasets: [{
-                label: 'Variación Térmica (Δ)',
-                data: datosVariacionY,
-                backgroundColor: coloresBarras,
-                borderColor: '#333',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    title: { display: true, text: 'Aumento (+) / Reducción (-)' },
-                    // beginAtZero fuerza al gráfico a mostrar la línea central del cero
-                    beginAtZero: true 
-                }
-            }
-        }
-    });
 }
